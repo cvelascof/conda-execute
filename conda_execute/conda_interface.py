@@ -18,7 +18,7 @@ conda_45 = CONDA_VERSION_MAJOR_MINOR >= (4, 5)
 from conda.lock import Locked
 Locked = Locked
 
-if conda_43:
+if conda_44:
     from conda.base.context import user_rc_path, sys_rc_path
     from conda.exports import envs_dirs, pkgs_dirs
     from conda.exports import Resolve
