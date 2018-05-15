@@ -82,7 +82,20 @@ def _create_env_conda_43(prefix, index, full_list_of_packages):
     txn = UnlinkLinkTransaction.create_from_dists(index, prefix, (), full_list_of_packages)
     txn.execute()
 
+def _create_env_conda_44(prefix, index, full_list_of_packages):
+    assert CONDA_VERSION_MAJOR_MINOR >= (4, 4)
+    from conda.core.package_cache import ProgressiveFetchExtract
+    from conda.core.link import UnlinkLinkTransaction
+    from conda.gateways.disk.create import mkdir_p
 
+    link_precs = tuple(index[d] for d in full_list_of_packages)
+
+    pfe = ProgressiveFetchExtract(link_precs)
+    pfe.execute()
+    mkdir_p(prefix)
+    txn = UnlinkLinkTransaction(index, prefix, (), link_precs)
+    txn.execute()
+    
 def create_env(spec, force_recreation=False, extra_channels=()):
     """
     Create a temporary environment from the given specification.
@@ -110,8 +123,10 @@ def create_env(spec, force_recreation=False, extra_channels=()):
 
             # Put out a newline. Conda's solve doesn't do it for us.
             log.info('\n')
-
-            if CONDA_VERSION_MAJOR_MINOR >= (4, 3):
+            if CONDA_VERSION_MAJOR_MINOR >= (4, 4):
+                sorted_list_of_packages = r.dependency_sort({d.name: d for d in full_list_of_packages})
+                _create_env_conda_44(env_locn, index, sorted_list_of_packages)
+            elif CONDA_VERSION_MAJOR_MINOR >= (4, 3):
                 sorted_list_of_packages = r.dependency_sort({d.name: d for d in full_list_of_packages})
                 _create_env_conda_43(env_locn, index, sorted_list_of_packages)
             else:
