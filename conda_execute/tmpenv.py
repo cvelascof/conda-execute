@@ -85,7 +85,7 @@ def _create_env_conda_43(prefix, index, full_list_of_packages):
 def _create_env_conda_44(prefix, index, full_list_of_packages):
     assert CONDA_VERSION_MAJOR_MINOR >= (4, 4)
     from conda.core.package_cache import ProgressiveFetchExtract
-    from conda.core.link import UnlinkLinkTransaction
+    from conda.core.link import PrefixSetup, UnlinkLinkTransaction
     from conda.gateways.disk.create import mkdir_p
 
     link_precs = tuple(index[d] for d in full_list_of_packages)
@@ -93,7 +93,15 @@ def _create_env_conda_44(prefix, index, full_list_of_packages):
     pfe = ProgressiveFetchExtract(link_precs)
     pfe.execute()
     mkdir_p(prefix)
-    txn = UnlinkLinkTransaction(index, prefix, (), link_precs)
+    #Now unlink linked transactions
+    stp = PrefixSetup(
+                target_prefix=prefix,
+                unlink_precs=link_precs,
+                link_precs=(),
+                remove_specs=(),
+                update_specs=(),
+    )
+    txn = UnlinkLinkTransaction(stp)
     txn.execute()
     
 def create_env(spec, force_recreation=False, extra_channels=()):
