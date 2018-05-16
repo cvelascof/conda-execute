@@ -30,7 +30,9 @@ elif conda_42:
     from conda.exports import Resolve
     from conda.exports import get_index
 
-    from conda.common.yaml import yaml_load
+    # from conda.common.yaml import yaml_load
+    from conda.common.serialize import yaml_dump, yaml_load
+
 else:
     from conda.config import user_rc_path, sys_rc_path
     from conda.config import envs_dirs, pkgs_dirs
