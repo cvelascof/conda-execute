@@ -89,8 +89,10 @@ def _create_env_conda_44(prefix, index, full_list_of_packages):
     from conda.gateways.disk.create import mkdir_p
     from conda.models.match_spec import MatchSpec
     from conda.core.solve import Solver
-    
-    m = Solver(prefix, (), specs_to_add=full_list_of_packages)
+    print(full_list_of_packages)
+    matched_list_of_packages = MatchSpec(full_list_of_packages)
+    print(str(matched_list_of_packages))
+    m = Solver(prefix, (), specs_to_add=matched_list_of_packages)
     txn = m.solve_for_transaction()
     txn.execute()
     
@@ -122,9 +124,9 @@ def create_env(spec, force_recreation=False, extra_channels=()):
             # Put out a newline. Conda's solve doesn't do it for us.
             log.info('\n')
             if CONDA_VERSION_MAJOR_MINOR >= (4, 4):
-                from conda.models.match_spec import MatchSpec
-                # sorted_list_of_packages = r.dependency_sort({d.name: d for d in full_list_of_packages})
-                sorted_list_of_packages = MatchSpec(spec)
+                # from conda.models.match_spec import MatchSpec
+                sorted_list_of_packages = r.dependency_sort({d.name: d for d in full_list_of_packages})
+                # sorted_list_of_packages = MatchSpec(spec)
                 _create_env_conda_44(env_locn, index, sorted_list_of_packages)
             elif CONDA_VERSION_MAJOR_MINOR >= (4, 3):
                 sorted_list_of_packages = r.dependency_sort({d.name: d for d in full_list_of_packages})
