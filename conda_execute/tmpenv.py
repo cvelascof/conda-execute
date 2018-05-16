@@ -87,21 +87,11 @@ def _create_env_conda_44(prefix, index, full_list_of_packages):
     from conda.core.package_cache import ProgressiveFetchExtract
     from conda.core.link import PrefixSetup, UnlinkLinkTransaction
     from conda.gateways.disk.create import mkdir_p
-
-    link_precs = tuple(index[d] for d in full_list_of_packages)
-
-    pfe = ProgressiveFetchExtract(link_precs)
-    pfe.execute()
-    mkdir_p(prefix)
-    #Now unlink linked transactions
-    stp = PrefixSetup(
-                target_prefix=prefix,
-                unlink_precs=link_precs,
-                link_precs=(),
-                remove_specs=(),
-                update_specs=(),
-    )
-    txn = UnlinkLinkTransaction(stp)
+    from conda.models.match_spec import MatchSpec
+    from conda.core.solve import Solver
+    
+    m = Solver(prefix, (), specs_to_add=full_list_of_packages)
+    txn = m.solve_for_transaction()
     txn.execute()
     
 def create_env(spec, force_recreation=False, extra_channels=()):
@@ -132,7 +122,9 @@ def create_env(spec, force_recreation=False, extra_channels=()):
             # Put out a newline. Conda's solve doesn't do it for us.
             log.info('\n')
             if CONDA_VERSION_MAJOR_MINOR >= (4, 4):
-                sorted_list_of_packages = r.dependency_sort({d.name: d for d in full_list_of_packages})
+                from conda.models.match_spec import MatchSpec
+                # sorted_list_of_packages = r.dependency_sort({d.name: d for d in full_list_of_packages})
+                sorted_list_of_packages = MatchSpec(spec)
                 _create_env_conda_44(env_locn, index, sorted_list_of_packages)
             elif CONDA_VERSION_MAJOR_MINOR >= (4, 3):
                 sorted_list_of_packages = r.dependency_sort({d.name: d for d in full_list_of_packages})
